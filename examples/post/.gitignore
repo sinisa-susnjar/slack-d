@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/post
+post.so
+post.dylib
+post.dll
+post.a
+post.lib
+post-test-*
+*.exe
+*.o
+*.obj
+*.lst
