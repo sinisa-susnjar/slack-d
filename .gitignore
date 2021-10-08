@@ -1,0 +1,16 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/slack-d
+slack-d.so
+slack-d.dylib
+slack-d.dll
+slack-d.a
+slack-d.lib
+slack-d-test-*
+*.exe
+*.o
+*.obj
+*.lst
+libslack-d.*
