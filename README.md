@@ -1,20 +1,20 @@
 # slack-d
 
-A Slack REST API for D
+Slack Web API for D
 
 # Implemented methods (so far)[^1]
 
 ## Chat
 
-| Method           | Description                   |
-| ---------------- | ----------------------------- |
-| chat.postMessage | Sends a message to a channel. |
+| Method                                         |
+| ---------------------------------------------- |
+| https://api.slack.com/methods/chat.postMessage |
 
 ## Conversations
 
-| Method                | Description                                              |
-| --------------------- | -------------------------------------------------------- |
-| conversations.list    | Lists all channels in a Slack team.                      |
-| conversations.history | Fetches a conversation's history of messages and events. |
+| Method                                                   |
+| -------------------------------------------------------- |
+| https://api.slack.com/methods/conversations.list         |
+| https://api.slack.com/methods/conversations.history      |
 
 [^1]: see https://api.slack.com/methods for a full list of methods offered by the Slack API.
