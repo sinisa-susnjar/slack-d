@@ -14,3 +14,4 @@ slack-d-test-*
 *.obj
 *.lst
 libslack-d.*
+loadenv
