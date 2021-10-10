@@ -1,3 +1,6 @@
+/// Main module for slack-d
+module slack;
+
 import std.net.curl, std.conv;
 
 public import std.datetime.systime;
@@ -8,7 +11,7 @@ package immutable slackApiUrl = "https://slack.com/api/";
 
 /**
  * Contains the response from a Slack REST API call encoded as JSON.
- * See_Also: std.json
+ * See_Also: $(D std.json)
  */
 struct Response {
 	/// Returns `true` if the last API call succeeded, `false` otherwise.
@@ -52,7 +55,7 @@ struct Slack {
 	 * Params:
 	 *   msgString = Message string
 	 * Returns: JSON response from REST API endpoint.
-	 * See_Also: https://api.slack.com/methods/chat.postMessage
+	 * See_Also: $(LINK https://api.slack.com/methods/chat.postMessage)
 	 */
 	Response postMessage(string msgString) {
 		return Response(post(slackApiUrl ~ "chat.postMessage",
@@ -67,7 +70,7 @@ struct Slack {
 	 *   oldest = SysTime of oldest entry to look for (default=0)
 	 *   latest = SysTime of latest entry to look for (default=now)
 	 * Returns: JSON response from REST API endpoint.
-	 * See_Also: https://api.slack.com/methods/conversations.history
+	 * See_Also: $(LINK https://api.slack.com/methods/conversations.history)
 	 */
 	Response conversationsHistory(string channelId, SysTime oldest = SysTime(), SysTime latest = SysTime()) {
 		string[string] data = ["token": _token, "channel": channelId];
@@ -79,14 +82,14 @@ struct Slack {
 	/**
 	 * Lists all channels in a Slack team.
 	 * Returns: JSON response from REST API endpoint.
-	 * See_Also: https://api.slack.com/methods/conversations.list
+	 * See_Also: $(LINK https://api.slack.com/methods/conversations.list)
 	 */
 	Response conversationsList() {
 		return Response(post(slackApiUrl ~ "conversations.list",
 						["token": _token, "exclude_archived": "true"], _urlHeader));
 	}
 
-	/// Sets the current channel to `channel`.
+	/// Sets the current channel.
 	@property void channel(string channel) { _channel = channel; }
 	/// Returns the current channel.
 	@property string channel() { return _channel; }
