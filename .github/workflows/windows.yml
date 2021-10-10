@@ -21,6 +21,8 @@ jobs:
     - uses: dlang-community/setup-dlang@v1.1.1
 
     - name: 'Build'
+      env:
+        SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
       run: |
         # Build the project, without unittests
         dub build
