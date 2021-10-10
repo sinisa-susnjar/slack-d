@@ -1,6 +1,5 @@
-import std.stdio;
-import std.conv;
-import std.process;
+import std.process, std.stdio;
+
 import slack;
 
 int main() {
