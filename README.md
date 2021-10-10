@@ -1,6 +1,4 @@
-# slack-d
-
-Slack Web API for D
+# Slack Web API for D
 
 # Implemented methods (so far)[^1]
 
