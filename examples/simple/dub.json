@@ -1,0 +1,8 @@
+{
+	"authors": [ "Sinisa Susnjar" ],
+	"copyright": "Copyright © 2021, Sinisa Susnjar",
+	"description": "Simple post-to-slack sample.",
+	"license": "MIT",
+	"name": "simple",
+	"dependencies": { "slack-d": { "path": "../../" } }
+}
