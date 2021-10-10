@@ -5,9 +5,11 @@ import std.conv;
 public import std.json;
 public import std.datetime.systime;
 
+// Base Slack Web API URL.
+package immutable slackApiUrl = "https://slack.com/api/";
+
 /**
- * Response type. Contains the response from a Slack REST API
- * call encoded as JSON.
+ * Contains the response from a Slack REST API call encoded as JSON.
  * See_Also: std.json
  */
 struct Response {
@@ -21,25 +23,33 @@ struct Response {
 	auto opIndex(string key) const { return _value[key]; }
 	alias _value this;
 package:
-	/// Response can only be constructed in this package.
+	/// Response may only be constructed in this package.
 	this(const char[] response) { _value = parseJSON(response); }
 	@disable this();
 private:
 	JSONValue _value;
 }
 
+/**
+ * Holds the authorization token and the current channel for further REST API calls.
+ */
 struct Slack {
-	/** 
+	/**
 	 * Constructs a new Slack object and stores the token and channel for later use.
 	 * Params:
 	 *   token = Slack BOT token to use for REST API authorization.
 	 *   channel = Channel to use. Default is `general`.
 	 */
 	this(string token, string channel = "general") {
-		// writefln("Slack.this(token: %s, channel: %s)", token, channel);
 		_token = token;
 		_channel = channel;
-	}
+		_urlHeader = HTTP();
+		_urlHeader.addRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+		_jsonHeader = HTTP();
+		_jsonHeader.addRequestHeader("Content-Type", "application/json");
+		_jsonHeader.addRequestHeader("Authorization", "Bearer " ~ _token);
+	}	// ctor()
+
 	/**
 	 * Sends a message to a channel.
 	 * Params:
@@ -48,37 +58,25 @@ struct Slack {
 	 * See_Also: https://api.slack.com/methods/chat.postMessage
 	 */
 	Response postMessage(string msgString) {
-		// writefln("Slack.postMessage(msgString: %s)", msgString);
-		auto http = HTTP();
-		http.addRequestHeader("Content-Type", "application/json");
-		http.addRequestHeader("Authorization", "Bearer " ~ _token);
-		auto response = post(slackApiUrl ~ "chat.postMessage",
-					`{"channel":"` ~ _channel ~ `", "attachments": [{"text":"` ~ msgString ~ `","color":"good"}]}`,
-					http);
-		// writeln("response: %s", response);
-		return Response(response);
+		return Response(post(slackApiUrl ~ "chat.postMessage",
+						`{"channel":"` ~ _channel ~ `", "attachments": [{"text":"` ~ msgString ~ `","color":"good"}]}`,
+						_jsonHeader));
 	}	// postMessage()
 
 	/**
 	 * Fetches a conversation's history of messages and events.
 	 * Params:
 	 *   channelId = Conversation ID to fetch history for.
-	 *   oldest = SysTime of oldest entry to look for (default
+	 *   oldest = SysTime of oldest entry to look for (default=0)
+	 *   latest = SysTime of latest entry to look for (default=now)
 	 * Returns: JSON response from REST API endpoint.
 	 * See_Also: https://api.slack.com/methods/conversations.history
 	 */
 	Response conversationsHistory(string channelId, SysTime oldest = SysTime(), SysTime latest = SysTime()) {
-		// writefln("Slack.conversationsHistory(channel: %s, oldest: %s, latest: %s)", channel, oldest, latest);
-		auto http = HTTP();
-		http.addRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		string[string] data = ["token": _token, "channel": channelId];
-		if (oldest != SysTime.init)
-			data["oldest"] = to!string(oldest.toUnixTime());
-		if (latest != SysTime.init)
-			data["latest"] = to!string(latest.toUnixTime());
-		auto response = post(slackApiUrl ~ "conversations.history", data, http);
-		// writeln("response: %s", response);
-		return Response(response);
+		if (oldest != SysTime.init) data["oldest"] = to!string(oldest.toUnixTime());
+		if (latest != SysTime.init) data["latest"] = to!string(latest.toUnixTime());
+		return Response(post(slackApiUrl ~ "conversations.history", data, _urlHeader));
 	}
 
 	/**
@@ -87,12 +85,8 @@ struct Slack {
 	 * See_Also: https://api.slack.com/methods/conversations.list
 	 */
 	Response conversationsList() {
-		// writefln("Slack.conversationsList(channel: %s)", channel);
-		auto http = HTTP();
-		http.addRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-		auto response = post(slackApiUrl ~ "conversations.list", ["token": _token, "exclude_archived": "true"], http);
-		// writeln("response: %s", response);
-		return Response(response);
+		return Response(post(slackApiUrl ~ "conversations.list",
+						["token": _token, "exclude_archived": "true"], _urlHeader));
 	}
 
 	/// Sets the current channel to `channel`.
@@ -101,10 +95,8 @@ struct Slack {
 	@property string channel() { return _channel; }
 
 private:
-	string _token;
+	HTTP _jsonHeader;
+	HTTP _urlHeader;
 	string _channel;
+	string _token;
 }
-
-package:
-
-immutable slackApiUrl = "https://slack.com/api/";
