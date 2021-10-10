@@ -1,9 +1,7 @@
-import std.net.curl;
-import std.stdio;
-import std.conv;
+import std.net.curl, std.conv;
 
-public import std.json;
 public import std.datetime.systime;
+public import std.json;
 
 // Base Slack Web API URL.
 package immutable slackApiUrl = "https://slack.com/api/";
@@ -21,7 +19,6 @@ struct Response {
 	auto ref opAssign(inout Response rhs) { _value = rhs._value; return this; }
 	/// Returns the value for the given key from the JSON response.
 	auto opIndex(string key) const { return _value[key]; }
-	alias _value this;
 package:
 	/// Response may only be constructed in this package.
 	this(const char[] response) { _value = parseJSON(response); }
@@ -95,8 +92,6 @@ struct Slack {
 	@property string channel() { return _channel; }
 
 private:
-	HTTP _jsonHeader;
-	HTTP _urlHeader;
-	string _channel;
-	string _token;
+	HTTP _jsonHeader, _urlHeader;
+	string _channel, _token;
 }
