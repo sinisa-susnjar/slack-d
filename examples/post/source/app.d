@@ -14,8 +14,24 @@ int main() {
 	// Create a Slack object with the given `token` and `channelName`.
 	auto slack = Slack(token, channelName);
 
-	// Post a message to the channel.
+	// Post a simple message to the channel.
 	auto r = slack.postMessage("Hello from slack-d!");
+	if (!r) {
+		writefln("failed to post to %s: %s", slack.channel, r);
+		return 1;
+	}
+
+	// Post a more elaborate message to the channel.
+	auto attachments = `[{
+			"fallback": "Never gonna give you up, never gonna let you down",
+			"pretext": "A message with more elaborate formatting",
+			"title": "Don't click here!",
+			"title_link": "https://youtu.be/dQw4w9WgXcQ",
+			"text": "You know the rules and so do I",
+			"color": "#7CD197",
+			"image_url": "https://assets.amuniversal.com/086aac509ee3012f2fe600163e41dd5b"
+		}]`;
+	r = slack.postMessage(parseJSON(attachments));
 	if (!r) {
 		writefln("failed to post to %s: %s", slack.channel, r);
 		return 1;
