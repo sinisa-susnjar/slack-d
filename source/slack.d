@@ -124,31 +124,32 @@ private:
 }
 
 unittest {
-	import std.process;
+	import std.process, std.format, std.system, core.cpuid;
 	import std.stdio;
 
 	auto token = environment.get("SLACK_TOKEN");
-	assert(token !is null);
+	assert(token !is null, "please define the SLACK_TOKEN environment variable!");
 
 	auto slack = Slack(token);
 
-	auto r = slack.postMessage("Hello from slack-d!");
-	assert(to!bool(r));
+	auto r = slack.postMessage(format("OS: %s (%s) CPU: %s %s with %s cores (%s threads)",
+							os, endian, vendor, processor, coresPerCPU, threadsPerCPU));
+	assert(to!bool(r), to!string(r));
 
 	r = slack.conversationsList();
-	assert(to!bool(r));
+	assert(to!bool(r), to!string(r));
 
 	string channelId;
 	foreach (channel; r["channels"].array)
 		if (channel["name"].str == slack.channel)
 			channelId = channel["id"].str;
-	assert(channelId.length > 0);
+	assert(channelId.length > 0, to!string(r));
 	writefln("channel: %s", channelId);
 
 	import core.time : seconds;
 	r = slack.conversationsHistory(channelId, Clock.currTime() - seconds(10));
 	writefln("r: %s", r);
-	assert(to!bool(r));
+	assert(to!bool(r), to!string(r));
 
 	// TODO: check if message we sent is in history
 	foreach (message; r["messages"].array)
