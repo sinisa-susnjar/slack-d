@@ -67,24 +67,34 @@ struct Slack {
 	this(string token, string channel = "general") {
 		_token = token;
 		_channel = channel;
-		_urlHeader = HTTP();
-		_urlHeader.addRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-		_jsonHeader = HTTP();
-		_jsonHeader.addRequestHeader("Content-Type", "application/json");
-		_jsonHeader.addRequestHeader("Authorization", "Bearer " ~ _token);
 	}	// ctor()
 
 	/**
 	 * Sends a message to a channel.
 	 * Params:
-	 *   msgString = Message string
+	 *   msgString = Plain message string
 	 * Returns: JSON response from REST API endpoint.
 	 * See_Also: $(LINK https://api.slack.com/methods/chat.postMessage)
 	 */
-	Response postMessage(string msgString) {
-		return Response(post(slackApiUrl ~ "chat.postMessage",
-						`{"channel":"` ~ _channel ~ `", "attachments": [{"text":"` ~ msgString ~ `","color":"good"}]}`,
-						_jsonHeader));
+	Response postMessage(string msgString) const {
+		string[string] data = ["token": _token, "channel": _channel, "text": msgString];
+		auto http = HTTP();
+		http.addRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+		return Response(post(slackApiUrl ~ "chat.postMessage", data, http));
+	}	// postMessage()
+
+	/**
+	 * Sends a message to a channel.
+	 * Params:
+	 *   attachments = Message attachments for more elaborate formatting
+	 * Returns: JSON response from REST API endpoint.
+	 * See_Also: $(LINK https://api.slack.com/methods/chat.postMessage)
+	 */
+	Response postMessage(JSONValue attachments) const {
+		string[string] data = ["token": _token, "channel": _channel, "attachments": toJSON(attachments)];
+		auto http = HTTP();
+		http.addRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+		return Response(post(slackApiUrl ~ "chat.postMessage", data, http));
 	}	// postMessage()
 
 	/**
@@ -96,11 +106,13 @@ struct Slack {
 	 * Returns: JSON response from REST API endpoint.
 	 * See_Also: $(LINK https://api.slack.com/methods/conversations.history)
 	 */
-	Response conversationsHistory(string channelId, SysTime oldest = SysTime(), SysTime latest = SysTime()) {
+	Response conversationsHistory(string channelId, SysTime oldest = SysTime(), SysTime latest = SysTime()) const {
 		string[string] data = ["token": _token, "channel": channelId];
 		if (oldest != SysTime.init) data["oldest"] = to!string(oldest.toUnixTime());
 		if (latest != SysTime.init) data["latest"] = to!string(latest.toUnixTime());
-		return Response(post(slackApiUrl ~ "conversations.history", data, _urlHeader));
+		auto http = HTTP();
+		http.addRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+		return Response(post(slackApiUrl ~ "conversations.history", data, http));
 	}
 
 	/**
@@ -108,52 +120,72 @@ struct Slack {
 	 * Returns: JSON response from REST API endpoint.
 	 * See_Also: $(LINK https://api.slack.com/methods/conversations.list)
 	 */
-	Response conversationsList() {
+	Response conversationsList() const {
+		auto http = HTTP();
+		http.addRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		return Response(post(slackApiUrl ~ "conversations.list",
-						["token": _token, "exclude_archived": "true"], _urlHeader));
+						["token": _token, "exclude_archived": "true"], http));
 	}
 
 	/// Sets the current channel.
 	@property void channel(string channel) { _channel = channel; }
 	/// Returns the current channel.
-	@property string channel() { return _channel; }
+	@property string channel() const { return _channel; }
 
 private:
-	HTTP _jsonHeader, _urlHeader;
 	string _channel, _token;
 }
 
 unittest {
-	import std.process, std.format, std.system, core.cpuid;
-	import std.stdio;
+	import std.process, std.format, std.system, core.cpuid, std.uuid;
 
 	auto token = environment.get("SLACK_TOKEN");
 	assert(token !is null, "please define the SLACK_TOKEN environment variable!");
 
 	auto slack = Slack(token);
 
-	auto r = slack.postMessage(format("OS: %s (%s) CPU: %s %s with %s cores (%s threads)",
-							os, endian, vendor, processor, coresPerCPU, threadsPerCPU));
+	auto msg = format("%s OS: %s (%s) CPU: %s %s with %s cores (%s threads)",
+					randomUUID(), os, endian, vendor, processor, coresPerCPU, threadsPerCPU);
+	auto r = slack.postMessage(msg);
+	assert(to!bool(r), to!string(r));
+
+	auto attachments = `[{
+			"fallback": "A message with more elaborate formatting",
+			"pretext": "` ~ msg ~ `",
+			"title": "Don't click here!",
+			"title_link": "https://youtu.be/dQw4w9WgXcQ",
+			"text": "You know the rules and so do I",
+			"color": "#7CD197",
+			"image_url": "https://assets.amuniversal.com/086aac509ee3012f2fe600163e41dd5b"
+			}]`;
+	r = slack.postMessage(parseJSON(attachments));
 	assert(to!bool(r), to!string(r));
 
 	r = slack.conversationsList();
 	assert(to!bool(r), to!string(r));
+
+	import std.range.primitives;
 
 	string channelId;
 	foreach (channel; r["channels"].array)
 		if (channel["name"].str == slack.channel)
 			channelId = channel["id"].str;
 	assert(channelId.length > 0, to!string(r));
-	writefln("channel: %s", channelId);
 
 	import core.time : seconds;
 	r = slack.conversationsHistory(channelId, Clock.currTime() - seconds(10));
-	writefln("r: %s", r);
 	assert(to!bool(r), to!string(r));
 
-	// TODO: check if message we sent is in history
-	foreach (message; r["messages"].array)
-		writefln("message: %s", message);
+	auto foundPlain = false;
+	auto foundElaborate = false;
+	foreach (message; r["messages"].array) {
+		if ("text" in message && message["text"].str == msg)
+			foundPlain = true;
+		if ("attachments" in message && message["attachments"][0]["pretext"].str == msg)
+			foundElaborate = true;
+	}
+	assert(foundPlain, "did not find plain message in history");
+	assert(foundElaborate, "did not find elaborate message in history");
 
 	slack.channel = "some_channel";
 	assert(slack.channel == "some_channel");
