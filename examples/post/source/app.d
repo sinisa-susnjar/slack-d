@@ -12,47 +12,40 @@ int main() {
 
 	auto channelName = "random";
 
+	// Create a Slack object with the given `token` and `channelName`.
 	auto slack = Slack(token, channelName);
 
+	// Post a message to the channel.
 	auto r = slack.postMessage("Hello from slack-d!");
 	if (!r) {
 		writefln("failed to post to %s: %s", slack.channel, r);
 		return 1;
 	}
-	// writefln("posted message to channel %s: %s", slack.channel, r);
 
+	// Get a list of channels from Slack.
 	r = slack.conversationsList();
 	if (!r) {
 		writefln("failed to get conversations list: %s", r);
 		return 1;
 	}
 
-	string channelId;
+	// Find the channel #id for the channel.
 	foreach (channel; r["channels"].array) {
 		if (channel["name"].str == channelName) {
 			writefln("found channel id for #%s: %s ", channel["name"].str, channel["id"].str);
-			channelId = channel["id"].str;
-			break;
+
+			import core.time : seconds;
+			// Get the history for the last 10 seconds.
+			r = slack.conversationsHistory(channel["id"].str, Clock.currTime() - seconds(10));
+			if (!r) {
+				writefln("failed to get conversations history: %s", r);
+				return 1;
+			}
+
+			// Print all messages and events for the last 10 seconds.
+			foreach (message; r["messages"].array)
+				writefln("message: %s", message);
 		}
-	}
-
-	import core.time : seconds;
-
-	auto oldest = Clock.currTime() - seconds(10);
-
-	r = slack.conversationsHistory(channelId, oldest);
-	if (!r) {
-		writefln("failed to get conversations history: %s", r);
-		return 1;
-	}
-
-	writefln("history: %s", r);
-
-	foreach (message; r["messages"].array) {
-		writefln("message: %s", message);
-		auto ts = to!double(message["ts"].str);
-		auto t = SysTime.fromUnixTime(to!long(ts));
-		writefln("ts: %s (%s)", t, to!long(ts));
 	}
 
 	return 0;
