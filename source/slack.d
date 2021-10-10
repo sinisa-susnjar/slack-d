@@ -1,7 +1,9 @@
 import std.net.curl;
 import std.stdio;
+import std.conv;
 
 public import std.json;
+public import std.datetime.systime;
 
 /**
  * Response type. Contains the response from a Slack REST API
@@ -15,6 +17,8 @@ struct Response {
 	auto toString() const { return toJSON(_value); }
 	/// Assign another Response to this one.
 	auto ref opAssign(inout Response rhs) { _value = rhs._value; return this; }
+	/// Returns the value for the given key from the JSON response.
+	auto opIndex(string key) const { return _value[key]; }
 	alias _value this;
 package:
 	/// Response can only be constructed in this package.
@@ -29,9 +33,9 @@ struct Slack {
 	 * Constructs a new Slack object and stores the token and channel for later use.
 	 * Params:
 	 *   token = Slack BOT token to use for REST API authorization.
-	 *   channel = Channel to use. Default is `#general`.
+	 *   channel = Channel to use. Default is `general`.
 	 */
-	this(string token, string channel = "#general") {
+	this(string token, string channel = "general") {
 		// writefln("Slack.this(token: %s, channel: %s)", token, channel);
 		_token = token;
 		_channel = channel;
@@ -59,14 +63,20 @@ struct Slack {
 	 * Fetches a conversation's history of messages and events.
 	 * Params:
 	 *   channelId = Conversation ID to fetch history for.
+	 *   oldest = SysTime of oldest entry to look for (default
 	 * Returns: JSON response from REST API endpoint.
 	 * See_Also: https://api.slack.com/methods/conversations.history
 	 */
-	Response conversationsHistory(string channelId) {
-		// writefln("Slack.conversationsHistory(channel: %s)", channel);
+	Response conversationsHistory(string channelId, SysTime oldest = SysTime(), SysTime latest = SysTime()) {
+		// writefln("Slack.conversationsHistory(channel: %s, oldest: %s, latest: %s)", channel, oldest, latest);
 		auto http = HTTP();
 		http.addRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-		auto response = post(slackApiUrl ~ "conversations.history", ["token": _token, "channel": channelId], http);
+		string[string] data = ["token": _token, "channel": channelId];
+		if (oldest != SysTime.init)
+			data["oldest"] = to!string(oldest.toUnixTime());
+		if (latest != SysTime.init)
+			data["latest"] = to!string(latest.toUnixTime());
+		auto response = post(slackApiUrl ~ "conversations.history", data, http);
 		// writeln("response: %s", response);
 		return Response(response);
 	}
