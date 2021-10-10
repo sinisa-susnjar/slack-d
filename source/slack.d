@@ -6,7 +6,7 @@ import std.net.curl, std.conv;
 public import std.datetime.systime;
 public import std.json;
 
-// Base Slack Web API URL.
+/// Base Slack Web API URL.
 package immutable slackApiUrl = "https://slack.com/api/";
 
 /**
@@ -28,6 +28,30 @@ package:
 	@disable this();
 private:
 	JSONValue _value;
+}
+
+unittest {
+	import std.exception, core.exception;
+	auto r = Response("");
+	assertThrown!JSONException(to!bool(r));
+	assert(r.toString() == "null");
+
+	r = Response(`{"ok":false}`);
+	assert(r.toString() == `{"ok":false}`);
+	assert(r["ok"].boolean == false);
+	assert(to!bool(r) == false);
+
+	r = Response(`{"ok":true}`);
+	assert(r.toString() == `{"ok":true}`);
+	assert(r["ok"].boolean == true);
+	assert(to!bool(r) == true);
+
+	auto r2 = Response(`{"ok":true}`);
+	assert(r == r2);
+
+	r = r2;
+	assert(r == r2);
+	assert(r2["ok"].boolean == true);
 }
 
 /**
@@ -97,4 +121,39 @@ struct Slack {
 private:
 	HTTP _jsonHeader, _urlHeader;
 	string _channel, _token;
+}
+
+unittest {
+	import std.process;
+	import std.stdio;
+
+	auto token = environment.get("SLACK_TOKEN");
+	assert(token !is null);
+
+	auto slack = Slack(token);
+
+	auto r = slack.postMessage("Hello from slack-d!");
+	assert(to!bool(r));
+
+	r = slack.conversationsList();
+	assert(to!bool(r));
+
+	string channelId;
+	foreach (channel; r["channels"].array)
+		if (channel["name"].str == slack.channel)
+			channelId = channel["id"].str;
+	assert(channelId.length > 0);
+	writefln("channel: %s", channelId);
+
+	import core.time : seconds;
+	r = slack.conversationsHistory(channelId, Clock.currTime() - seconds(10));
+	writefln("r: %s", r);
+	assert(to!bool(r));
+
+	// TODO: check if message we sent is in history
+	foreach (message; r["messages"].array)
+		writefln("message: %s", message);
+
+	slack.channel = "some_channel";
+	assert(slack.channel == "some_channel");
 }
