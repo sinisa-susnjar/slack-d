@@ -14,7 +14,7 @@ void main() {
 }
 ```
 
-## Implemented methods (so far)[^1]
+## Implemented methods (so far)
 
 ### Chat
 
@@ -25,4 +25,4 @@ void main() {
 * https://api.slack.com/methods/conversations.list
 * https://api.slack.com/methods/conversations.history
 
-[^1]: see https://api.slack.com/methods for a full list of methods offered by the Slack API.
+See https://api.slack.com/methods for a full list of methods offered by the Slack API.
