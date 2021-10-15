@@ -190,3 +190,25 @@ unittest {
 	slack.channel = "some_channel";
 	assert(slack.channel == "some_channel");
 }
+
+unittest {
+	import std.process, std.format, std.system, core.cpuid, std.uuid;
+
+	auto token = environment.get("SLACK_TOKEN");
+	assert(token !is null, "please define the SLACK_TOKEN environment variable!");
+
+	auto slack = Slack(token);
+
+	auto msg = `this&that \\[@\\] an!// '; < ? >> , <~ ~ @ # \\} \\{ * & % $ ! >~<`;
+	auto r = slack.postMessage(msg);
+	assert(to!bool(r), to!string(r));
+
+	auto attachments = `[{
+			"fallback": "` ~ msg ~ `",
+			"pretext": "` ~ msg ~ `",
+			"text": "` ~ msg ~ `",
+			"color": "#7CD197"
+			}]`;
+	r = slack.postMessage(parseJSON(attachments));
+	assert(to!bool(r), to!string(r));
+}
