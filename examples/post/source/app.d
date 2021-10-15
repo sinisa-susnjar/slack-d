@@ -2,7 +2,7 @@ import std.process, std.stdio;
 
 import slack;
 
-int main() {
+int main(string[] args) {
 	auto token = environment.get("SLACK_TOKEN");
 	if (token is null) {
 		writefln("Please set the SLACK_TOKEN environment variable");
@@ -14,8 +14,12 @@ int main() {
 	// Create a Slack object with the given `token` and `channelName`.
 	auto slack = Slack(token, channelName);
 
+	auto msg = "Hello from slack-d!"; // standard message
+	if (args.length > 1)
+		msg = args[1];
+
 	// Post a simple message to the channel.
-	auto r = slack.postMessage("Hello from slack-d!");
+	auto r = slack.postMessage(msg);
 	if (!r) {
 		writefln("failed to post to %s: %s", slack.channel, r);
 		return 1;
