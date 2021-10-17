@@ -26,7 +26,7 @@ int main(string[] args) {
 	}
 
 	// Post a more elaborate message to the channel.
-	auto attachments = `[{
+	auto attachments = `{"attachments":[{
 			"fallback": "Never gonna give you up, never gonna let you down",
 			"pretext": "A message with more elaborate formatting",
 			"title": "Don't click here!",
@@ -34,7 +34,7 @@ int main(string[] args) {
 			"text": "You know the rules and so do I",
 			"color": "#7CD197",
 			"image_url": "https://assets.amuniversal.com/086aac509ee3012f2fe600163e41dd5b"
-		}]`;
+		}]}`;
 	r = slack.postMessage(parseJSON(attachments));
 	if (!r) {
 		writefln("failed to post to %s: %s", slack.channel, r);
