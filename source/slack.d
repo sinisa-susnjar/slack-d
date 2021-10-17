@@ -93,9 +93,9 @@ struct Slack {
 	Response postMessage(JSONValue jsonMsg) const {
 		string[string] data = ["token": _token, "channel": _channel];
 		if ("attachments" in jsonMsg)
-			data["attachments"] = toJSON(jsonMsg);
+			data["attachments"] = toJSON(jsonMsg["attachments"]);
 		else if ("blocks" in jsonMsg)
-			data["blocks"] = toJSON(jsonMsg);
+			data["blocks"] = toJSON(jsonMsg["blocks"]);
 		else
 			assert(0, `missing "attachment" or "blocks"`);
 		auto http = HTTP();
@@ -155,7 +155,7 @@ unittest {
 	auto r = slack.postMessage(msg);
 	assert(to!bool(r), to!string(r));
 
-	auto attachments = `[{
+	auto attachments = `{"attachments":[{
 			"fallback": "A message with more elaborate formatting",
 			"pretext": "` ~ msg ~ `",
 			"title": "Don't click here!",
@@ -163,8 +163,125 @@ unittest {
 			"text": "You know the rules and so do I",
 			"color": "#7CD197",
 			"image_url": "https://assets.amuniversal.com/086aac509ee3012f2fe600163e41dd5b"
-			}]`;
+			}]}`;
 	r = slack.postMessage(parseJSON(attachments));
+	assert(to!bool(r), to!string(r));
+
+	auto blocks = `{"blocks":[
+			{
+				"type": "header",
+				"text": {
+					"type": "plain_text",
+					"text": "` ~ msg ~ `",
+					"emoji": true
+				}
+			},
+			{
+				"type": "section",
+				"fields": [
+					{
+						"type": "mrkdwn",
+						"text": "*Type:*\nPaid Time Off"
+					},
+					{
+						"type": "mrkdwn",
+						"text": "*Created by:*\n<example.com|Fred Enriquez>"
+					}
+				]
+			},
+			{
+				"type": "section",
+				"fields": [
+					{
+						"type": "mrkdwn",
+						"text": "*When:*\nAug 10 - Aug 13"
+					},
+					{
+						"type": "mrkdwn",
+						"text": "*Type:*\nPaid time off"
+					}
+				]
+			},
+			{
+				"type": "section",
+				"fields": [
+					{
+						"type": "mrkdwn",
+						"text": "*Hours:*\n16.0 (2 days)"
+					},
+					{
+						"type": "mrkdwn",
+						"text": "*Remaining balance:*\n32.0 hours (4 days)"
+					}
+				]
+			},
+			{
+				"type": "section",
+				"text": {
+					"type": "mrkdwn",
+					"text": "<https://example.com|View request>"
+				}
+			},
+			{
+				"type": "divider"
+			},
+			{
+				"type": "section",
+				"text": {
+					"type": "mrkdwn",
+					"text": "Pick a date for the deadline."
+				},
+				"accessory": {
+					"type": "datepicker",
+					"initial_date": "1990-04-28",
+					"placeholder": {
+						"type": "plain_text",
+						"text": "Select a date",
+						"emoji": true
+					},
+					"action_id": "datepicker-action"
+				}
+			},
+			{
+				"type": "section",
+				"text": {
+					"type": "mrkdwn",
+					"text": "Section block with a timepicker"
+				},
+				"accessory": {
+					"type": "timepicker",
+					"initial_time": "13:37",
+					"placeholder": {
+						"type": "plain_text",
+						"text": "Select time",
+						"emoji": true
+					},
+					"action_id": "timepicker-action"
+				}
+			},
+			{
+				"type": "section",
+				"text": {
+					"type": "mrkdwn",
+					"text": "This is a section block with an accessory image."
+				},
+				"accessory": {
+					"type": "image",
+					"image_url": "https://pbs.twimg.com/profile_images/625633822235693056/lNGUneLX_400x400.jpg",
+					"alt_text": "cute cat"
+				}
+			},
+			{
+				"type": "divider"
+			},
+			{
+				"type": "image",
+				"image_url": "https://i1.wp.com/thetempest.co/wp-content/uploads/2017/08/The-wise-words-of-Michael-Scott-Imgur-2.jpg?w=1024&ssl=1",
+				"alt_text": "inspiration"
+			}
+		]}`;
+
+	r = slack.postMessage(parseJSON(blocks));
 	assert(to!bool(r), to!string(r));
 
 	r = slack.conversationsList();
@@ -182,16 +299,20 @@ unittest {
 	r = slack.conversationsHistory(channelId, Clock.currTime() - seconds(10));
 	assert(to!bool(r), to!string(r));
 
+	auto foundAttachments = false;
+	auto foundBlocks = false;
 	auto foundPlain = false;
-	auto foundElaborate = false;
 	foreach (message; r["messages"].array) {
 		if ("text" in message && message["text"].str == msg)
 			foundPlain = true;
 		if ("attachments" in message && message["attachments"][0]["pretext"].str == msg)
-			foundElaborate = true;
+			foundAttachments = true;
+		if ("blocks" in message && message["blocks"][0]["text"]["text"].str == msg)
+			foundBlocks = true;
 	}
 	assert(foundPlain, "did not find plain message in history");
-	assert(foundElaborate, "did not find elaborate message in history");
+	assert(foundBlocks, "did not find blocks message in history");
+	assert(foundAttachments, "did not find attachments message in history");
 
 	slack.channel = "some_channel";
 	assert(slack.channel == "some_channel");
@@ -209,12 +330,12 @@ unittest {
 	auto r = slack.postMessage(msg);
 	assert(to!bool(r), to!string(r));
 
-	auto attachments = `[{
+	auto attachments = `{"attachments":[{
 			"fallback": "` ~ msg ~ `",
 			"pretext": "` ~ msg ~ `",
 			"text": "` ~ msg ~ `",
 			"color": "#7CD197"
-			}]`;
+			}]}`;
 	r = slack.postMessage(parseJSON(attachments));
 	assert(to!bool(r), to!string(r));
 }
