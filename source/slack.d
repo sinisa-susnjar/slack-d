@@ -86,12 +86,18 @@ struct Slack {
 	/**
 	 * Sends a message to a channel.
 	 * Params:
-	 *   attachments = Message attachments for more elaborate formatting
+	 *   jsonMsg = Message containing either "attachments" or "blocks" for more elaborate formatting
 	 * Returns: JSON response from REST API endpoint.
 	 * See_Also: $(LINK https://api.slack.com/methods/chat.postMessage)
 	 */
-	Response postMessage(JSONValue attachments) const {
-		string[string] data = ["token": _token, "channel": _channel, "attachments": toJSON(attachments)];
+	Response postMessage(JSONValue jsonMsg) const {
+		string[string] data = ["token": _token, "channel": _channel];
+		if ("attachments" in jsonMsg)
+			data["attachments"] = toJSON(jsonMsg);
+		else if ("blocks" in jsonMsg)
+			data["blocks"] = toJSON(jsonMsg);
+		else
+			assert(0, `missing "attachment" or "blocks"`);
 		auto http = HTTP();
 		http.addRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		return Response(post(slackApiUrl ~ "chat.postMessage", data, http));
