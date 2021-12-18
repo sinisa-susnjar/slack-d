@@ -25,4 +25,8 @@ void main() {
 * https://api.slack.com/methods/conversations.list
 * https://api.slack.com/methods/conversations.history
 
+## TODO's
+
+* Add support for RTM (real-time messaging) API (see: https://api.slack.com/methods/rtm.connect)
+
 See https://api.slack.com/methods for a full list of methods offered by the Slack API.
