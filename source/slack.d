@@ -307,7 +307,7 @@ unittest {
 			foundPlain = true;
 		if ("attachments" in message && message["attachments"][0]["pretext"].str == msg)
 			foundAttachments = true;
-		if ("blocks" in message && message["blocks"][0]["text"]["text"].str == msg)
+		if ("blocks" in message && "text" in message["blocks"][0] && message["blocks"][0]["text"]["text"].str == msg)
 			foundBlocks = true;
 	}
 	assert(foundPlain, "did not find plain message in history");
