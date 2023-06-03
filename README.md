@@ -36,3 +36,13 @@ void main() {
 * Add support for RTM (real-time messaging) API (see: https://api.slack.com/methods/rtm.connect)
 
 See https://api.slack.com/methods for a full list of methods offered by the Slack API.
+
+# History
+
+* v0.0.6 Added first async support.
+* v0.0.5 Updated GitHub actions.
+* v0.0.4 Small code and GitHub actions fixes.
+* v0.0.3 Attachement fixes due to Slack API change.
+* v0.0.2 Simplyfied `post` example, unit tests.
+* v0.0.1 First slack.
+
