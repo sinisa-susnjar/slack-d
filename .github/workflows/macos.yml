@@ -1,30 +1,30 @@
 name: macos
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+    - main
 
 jobs:
   build:
-    runs-on: ${{matrix.config.os}}
+    runs-on: ${{matrix.os}}
     strategy:
       fail-fast: false
       matrix:
-        config:
-          # - { os: macos-10.15, dc: ldc-latest }
-          - { os: macos-latest, dc: ldc-latest  }
-        # build: [Debug, Release]
-        build: [Release]
+        os: [ macos-latest ]
+        dc: [ ldc-latest, dmd-latest ]
 
-    name: "${{matrix.config.os}}:${{matrix.build}}"
+    name: "${{matrix.os}}:${{matrix.dc}}"
 
     steps:
-    - uses: actions/checkout@v2
-    - uses: dlang-community/setup-dlang@v1.2.0
+    - uses: actions/checkout@v3
+    - uses: dlang-community/setup-dlang@v1.3.0
 
-    - name: 'Build'
+    - name: 'Build & Test'
       env:
         SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
       run: |
         # Build the project, without unittests
-        dub build --compiler=$DC
+        dub build -b release --compiler=$DC
         # Build and run tests
         dub test -b unittest-cov --compiler=$DC
