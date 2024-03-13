@@ -22,6 +22,10 @@ void main() {
 
 ## Implemented methods (so far)
 
+### Utilities
+
+* https://api.slack.com/methods/api.test
+
 ### Chat
 
 * https://api.slack.com/methods/chat.postMessage
@@ -39,6 +43,7 @@ See https://api.slack.com/methods for a full list of methods offered by the Slac
 
 # History
 
+* v0.0.7 Added Slack.test(); some refactoring.
 * v0.0.6 Added first async support.
 * v0.0.5 Updated GitHub actions.
 * v0.0.4 Small code and GitHub actions fixes.

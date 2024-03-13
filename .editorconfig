@@ -1,3 +1,4 @@
 [*]
+dfmt_brace_style = knr
 indent_style = space
-indent_size = 4
+indent_size = 2

@@ -1,10 +1,11 @@
 {
-	"authors": [ "Sinisa Susnjar" ],
-	"copyright": "Copyright © 2022, Sinisa Susnjar",
-	"description": "Slack API for D",
-	"license": "MIT",
-	"name": "slack-d",
-	"configurations": [
-		{ "name": "lib", "targetType": "staticLibrary" }
-	]
+  "authors": [ "Sinisa Susnjar" ],
+  "copyright": "Copyright © 2024, Sinisa Susnjar",
+  "description": "Slack API for D",
+  "license": "MIT",
+  "name": "slack-d",
+  "configurations": [
+    { "name": "lib", "targetType": "staticLibrary" },
+    { "name": "shared", "targetType": "dynamicLibrary" }
+  ]
 }

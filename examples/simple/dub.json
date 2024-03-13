@@ -1,8 +1,11 @@
 {
-	"authors": [ "Sinisa Susnjar" ],
-	"copyright": "Copyright © 2022, Sinisa Susnjar",
-	"description": "Simple post-to-slack sample.",
-	"license": "MIT",
-	"name": "simple",
-	"dependencies": { "slack-d": { "path": "../../" } }
+  "authors": [ "Sinisa Susnjar" ],
+  "copyright": "Copyright © 2024, Sinisa Susnjar",
+  "description": "Simple post-to-slack sample.",
+  "license": "MIT",
+  "name": "simple",
+  "dependencies": { "slack-d": { "path": "../../" } },
+  "configurations": [
+    { "name": "bin", "targetType": "executable" }
+  ]
 }
