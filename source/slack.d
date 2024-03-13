@@ -378,6 +378,14 @@ unittest {
                     "image_url": "https://pbs.twimg.com/profile_images/625633822235693056/lNGUneLX_400x400.jpg",
                     "alt_text": "cute cat"
                 }
+            },
+            {
+                "type": "divider"
+            },
+            {
+                "type": "image",
+                "image_url": "https://i.imgur.com/7XYSLI0.jpeg",
+                "alt_text": "inspiration"
             }
         ]}`;
 
