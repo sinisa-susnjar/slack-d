@@ -4,12 +4,12 @@ import std.process, std.stdio;
 import std.conv : to;
 import slack;
 
-mixin template SlackDemo(alias slack) {
+private mixin template SlackDemo(alias slack) {
   void post(bool async)
   {
     writefln("Post 10 %ssynchronous messages.", async ? "a" : "");
     Response[10] r;
-    auto t = Clock.currTime();
+    immutable t = Clock.currTime();
     foreach (n; 0 .. 10)
       r[n] = slack.postMessage(to!string(n) ~ (async
           ? " a" : " ") ~ "sync hello from slack-d !", async);
@@ -22,11 +22,11 @@ mixin template SlackDemo(alias slack) {
 
 void main()
 {
-  auto token = environment.get("SLACK_TOKEN");
+  immutable token = environment.get("SLACK_TOKEN");
   assert(token != null, "Please set the SLACK_TOKEN environment variable");
 
   // Create a Slack object using the given token.
-  auto slack = Slack(token, "bottest");
+  immutable slack = Slack(token, "bottest");
 
   // Check if slacking is possible by using the slack.test api endpoint.
   auto res = slack.test();
