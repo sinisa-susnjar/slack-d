@@ -38,8 +38,7 @@ struct Response {
   auto opCast(T : bool)() const
   {
     if (_task) {
-      enforce(_task == null, "must await() asynchronous Response");
-      return false;
+      enforce(false, "must await() asynchronous Response");
     }
     return _value["ok"].boolean;
   }
@@ -47,8 +46,7 @@ struct Response {
   auto toString() const
   {
     if (_task) {
-      enforce(_task == null, "must await() asynchronous Response");
-      return "";
+      enforce(false, "must await() asynchronous Response");
     }
     return toJSON(_value);
   }
@@ -69,11 +67,7 @@ package:
   /// Construct a response from a JSON string.
   this(const char[] response)
   {
-    import std.stdio;
-
-    writefln("Response.this(): response: %s", response);
     _value = parseJSON(response);
-    writefln("Response.this(): _value: %s", _value);
   }
   /// Construct a response from a task.
   this(ResponseTask* task)
@@ -258,8 +252,6 @@ private:
 unittest {
   import std.process, std.format, std.system, core.cpuid, std.uuid;
 
-  import std.stdio;
-
   auto token = environment.get("SLACK_TOKEN");
   assert(token !is null, "please define the SLACK_TOKEN environment variable!");
 
@@ -270,7 +262,6 @@ unittest {
   // Slack seems to impose a restriction on how long block text can be.
   if (msg.length >= 150)
     msg = msg[0 .. 150];
-  writefln("msg: %s", msg);
   auto r = slack.postMessage(msg);
   assert(to!bool(r), to!string(r));
 
@@ -400,12 +391,7 @@ unittest {
             }
         ]}`;
 
-  import std.stdio;
-
-  writefln("blocks: %s", blocks);
-
   r = slack.postMessage(parseJSON(blocks));
-  writefln("response: %s", r);
 
   assert(to!bool(r), to!string(r));
 
@@ -447,14 +433,22 @@ unittest {
 
 unittest {
   import std.process, std.format, std.system, core.cpuid, std.uuid;
+  import std.exception;
 
   auto token = environment.get("SLACK_TOKEN");
   assert(token !is null, "please define the SLACK_TOKEN environment variable!");
 
   auto slack = Slack(token);
 
+  auto r = slack.test(true);
+
+  assertThrown(to!bool(r));
+  assertThrown(to!string(r));
+
+  assert(to!bool(r.await), to!string(r));
+
   auto msg = `this&that \\[@\\] an!// '; < ? >> , <~ ~ @ # \\} \\{ * & % $ ! >~<`;
-  auto r = slack.postMessage(msg);
+  r = slack.postMessage(msg);
   assert(to!bool(r), to!string(r));
 
   auto attachments = `{"attachments":[{

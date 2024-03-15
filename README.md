@@ -43,6 +43,7 @@ See https://api.slack.com/methods for a full list of methods offered by the Slac
 
 # History
 
+* v0.0.8 Fixed github build & unittest failures; improved coverage.
 * v0.0.7 Added Slack.test(); some refactoring.
 * v0.0.6 Added first async support.
 * v0.0.5 Updated GitHub actions.
