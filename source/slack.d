@@ -158,6 +158,7 @@ struct Slack {
    *   jsonMsg = Message containing either "attachments" or "blocks" for more elaborate formatting
    *   async = If the request should be made asynchronously
    * Returns: JSON response from REST API endpoint.
+   * Note: The slack api will return an error if any text within a block is longer than 150 characters.
    * See_Also: $(LINK https://api.slack.com/methods/chat.postMessage)
    */
   Response postMessage(JSONValue jsonMsg, bool async = false) const
@@ -266,6 +267,9 @@ unittest {
 
   auto msg = format("%s OS: %s (%s) CPU: %s %s with %s cores (%s threads)",
       randomUUID(), os, endian, vendor, processor, coresPerCPU, threadsPerCPU);
+  // Slack seems to impose a restriction on how long block text can be.
+  if (msg.length >= 150)
+    msg = msg[0 .. 150];
   writefln("msg: %s", msg);
   auto r = slack.postMessage(msg);
   assert(to!bool(r), to!string(r));

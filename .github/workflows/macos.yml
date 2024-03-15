@@ -11,8 +11,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ macos-latest, macos-13 ]
-        dc: [ ldc-latest, dmd-latest ]
+        os: [ macos-11, macos-latest ]
+        dc: [ ldc-1.32.2, ldc-latest, dmd-latest ]
 
     name: "${{matrix.os}}:${{matrix.dc}}"
 
