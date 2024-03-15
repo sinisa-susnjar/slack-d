@@ -389,7 +389,13 @@ unittest {
             }
         ]}`;
 
+  import std.stdio;
+
+  writefln("blocks: %s", blocks);
+
   r = slack.postMessage(parseJSON(blocks));
+  writefln("response: %s", r);
+
   assert(to!bool(r), to!string(r));
 
   r = slack.conversationsList();
