@@ -257,6 +257,8 @@ private:
 unittest {
   import std.process, std.format, std.system, core.cpuid, std.uuid;
 
+  import std.stdio;
+
   auto token = environment.get("SLACK_TOKEN");
   assert(token !is null, "please define the SLACK_TOKEN environment variable!");
 
@@ -264,6 +266,7 @@ unittest {
 
   auto msg = format("%s OS: %s (%s) CPU: %s %s with %s cores (%s threads)",
       randomUUID(), os, endian, vendor, processor, coresPerCPU, threadsPerCPU);
+  writefln("msg: %s", msg);
   auto r = slack.postMessage(msg);
   assert(to!bool(r), to!string(r));
 
