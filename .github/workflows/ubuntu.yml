@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest ]
+        os: [ ubuntu-20.04, ubuntu-latest ]
         dc: [ ldc-latest, dmd-latest ]
 
     name: "${{matrix.os}}:${{matrix.dc}}"

@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ windows-latest ]
+        os: [ windows-2019, windows-latest ]
         dc: [ ldc-latest, dmd-latest ]
 
     name: "${{matrix.os}}:${{matrix.dc}}"
