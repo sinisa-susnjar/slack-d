@@ -69,7 +69,11 @@ package:
   /// Construct a response from a JSON string.
   this(const char[] response)
   {
+    import std.stdio;
+
+    writefln("Response.this(): response: %s", response);
     _value = parseJSON(response);
+    writefln("Response.this(): _value: %s", _value);
   }
   /// Construct a response from a task.
   this(ResponseTask* task)
