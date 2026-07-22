@@ -24,6 +24,8 @@ jobs:
     - name: 'Build & Test'
       env:
         SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+      with:
+        token: ${{ secrects.CODECOV_TOKEN }}
       run: |
         # Build the project, without unittests
         dub build -b release --compiler=$DC
