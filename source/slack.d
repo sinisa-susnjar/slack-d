@@ -11,6 +11,8 @@ import std.exception : enforce;
 /// Base Slack Web API URL.
 package immutable slackApiUrl = "https://slack.com/api/";
 
+import std.logger.core;
+
 /**
  * Contains the response from a Slack REST API call encoded as JSON.
  * See_Also: $(D std.json)
@@ -19,6 +21,16 @@ struct Response {
 
   /// Shortname for the used async task type.
   alias ResponseTask = Task!(post, string, string[string], HTTP);
+
+  Response dup() const
+  {
+    Response res;
+    infof("before dup(): value: %s task: %s", _value, _task);
+    res._value = _value;
+    res._task = cast(ResponseTask*) _task;
+    infof("after dup(): value: %s task: %s", res._value, res._task);
+    return res;
+  }
 
   /**
    * Await an asynchronous response and return `this` for call chaining.
